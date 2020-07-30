@@ -97,7 +97,7 @@ func Star(matrix string, dnas []string) (int, []string, error) {
 		return 0, []string{}, errors.New("invalid matrix")
 	}
 
-	mat := make([][][2]map[int]int, len(dnas))
+	mat := make([][][2][]int, len(dnas))
 	sum := make([]int, len(dnas))
 	for i,xDna := range dnas {
 		for j,yDna := range dnas[:i+1] {
@@ -109,7 +109,7 @@ func Star(matrix string, dnas []string) (int, []string, error) {
 			if err != nil {
 				return 0, []string{}, fmt.Errorf("failed in restoration: %w", err)
 			}
-			mat[i] = append(mat[i], [2]map[int]int{xGaps,yGaps})
+			mat[i] = append(mat[i], [2][]int{xGaps,yGaps})
 			if i!=j {
 				sum[i] += mtr[len(xDna)][len(yDna)]
 				sum[j] += mtr[len(xDna)][len(yDna)]
@@ -126,17 +126,17 @@ func Star(matrix string, dnas []string) (int, []string, error) {
 		}
 	}
 
-	mt := make(map[int][2]map[int]int, len(dnas))
+	mt := make(map[int][2][]int, len(dnas))
 	for i:=0;i<len(dnas);i++ {
 		v,ok := mt[i]
 		if !ok {
 			if i<=maxKey {
-				v = [2]map[int]int{
-					(mat[maxKey][i])[0],
-					(mat[maxKey][i])[1],
+				v = [2][]int{
+					mat[maxKey][i][0],
+					mat[maxKey][i][1],
 				}
 			} else {
-				v = [2]map[int]int{
+				v = [2][]int{
 					(mat[i][maxKey])[1],
 					(mat[i][maxKey])[0],
 				}
@@ -146,14 +146,14 @@ func Star(matrix string, dnas []string) (int, []string, error) {
 			val,ok := mt[j]
 			if !ok {
 				if j<=maxKey {
-					val = [2]map[int]int{
-						(mat[maxKey][j])[0],
-						(mat[maxKey][j])[1],
+					val = [2][]int{
+						mat[maxKey][j][0],
+						mat[maxKey][j][1],
 					}
 				} else {
-					val = [2]map[int]int{
-						(mat[j][maxKey])[1],
-						(mat[j][maxKey])[0],
+					val = [2][]int{
+						mat[j][maxKey][1],
+						mat[j][maxKey][0],
 					}
 				}
 			}
@@ -273,9 +273,9 @@ func dp(matrix [24][24]int, xDna string, yDna string) ([][]int, error) {
 	return m, nil
 }
 
-func restorationDP(m [24][24]int, matrix [][]int, xDna string, yDna string) (map[int]int, map[int]int, error) {
-	xGaps := map[int]int{}
-	yGaps := map[int]int{}
+func restorationDP(m [24][24]int, matrix [][]int, xDna string, yDna string) ([]int, []int, error) {
+	xGaps := []int{}
+	yGaps := []int{}
 	i:=len(xDna)
 	j:=len(yDna)
 	runeX := []rune(xDna)
@@ -285,7 +285,7 @@ func restorationDP(m [24][24]int, matrix [][]int, xDna string, yDna string) (map
 	for i>0&&j>0 {
 		if i == bi && j == bj {
 			fmt.Println(i,j)
-			return map[int]int{}, map[int]int{}, errors.New("loop occured")
+			return []int{}, []int{}, errors.New("loop occured")
 		}
 		bi = i
 		bj = j
@@ -320,11 +320,11 @@ func restorationDP(m [24][24]int, matrix [][]int, xDna string, yDna string) (map
 				}
 				char1, ok := proteinMap[chars[0]]
 				if !ok {
-					return map[int]int{}, map[int]int{}, fmt.Errorf("invalid char: %s",chars[0])
+					return []int{}, []int{}, fmt.Errorf("invalid char: %s",chars[0])
 				}
 				char2, ok := proteinMap[chars[1]]
 				if !ok {
-					return map[int]int{}, map[int]int{}, fmt.Errorf("invalid char: %s", chars[1])
+					return []int{}, []int{}, fmt.Errorf("invalid char: %s", chars[1])
 				}
 				if score+m[char1][char2] == matrix[i][j] {
 					if v == 0 {
@@ -352,7 +352,7 @@ func restorationDP(m [24][24]int, matrix [][]int, xDna string, yDna string) (map
 	return xGaps, yGaps, nil
 }
 
-func stringfy(dna string, gaps map[int]int) string {
+func stringfy(dna string, gaps []int) string {
 	r := strings.Repeat("-", gaps[0])
 	for i,val := range dna {
 		r += string(val)
